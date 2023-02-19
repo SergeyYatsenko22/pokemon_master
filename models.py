@@ -1,4 +1,5 @@
 from django.db import models  # noqa F401
+from django.http import request
 
 
 class Pokemon(models.Model):
@@ -7,7 +8,6 @@ class Pokemon(models.Model):
 
     def __str__(self):
         return f'{self.title}'
-
 
 
 class PokemonEntity(models.Model):
