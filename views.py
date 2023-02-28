@@ -33,19 +33,34 @@ def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
 
+
     for pokemon in Pokemon.objects.all():
         for pokemon_entity in PokemonEntity.objects.filter(pokemon__title=pokemon.title):
             if timezone.localtime(pokemon_entity.disappeared_at) >= timezone.localtime() and \
                     timezone.localtime(pokemon_entity.appeared_at) <= timezone.localtime():
-                add_pokemon(
+                if pokemon.image:
+                    add_pokemon(
                     folium_map, pokemon_entity.lat,
                     pokemon_entity.lon,
                     request.build_absolute_uri(pokemon.image.url)
                 )
+                else:
+                    add_pokemon(
+                        folium_map, pokemon_entity.lat,
+                        pokemon_entity.lon,
+                        request.build_absolute_uri(pokemon.image.name)
+                    )
+
 
     pokemons_on_page = []
 
     for pokemon in Pokemon.objects.all():
+        # pokemons_on_page.append({
+        #     'pokemon_id': pokemon.id,
+        #     'img_url': request.build_absolute_uri(pokemon.image.url),
+        #     'title_ru': pokemon.title,
+        # })
+
         if pokemon.image:
             pokemons_on_page.append({
                 'pokemon_id': pokemon.id,
@@ -67,15 +82,21 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
 
-    pokemons = defaultdict(str)
+    pokemons = dict()
     try:
-       pokemon = Pokemon.objects.get(id=pokemon_id)
-       pokemons["pokemon_id"] = pokemon.id
-       pokemons["title_ru"] = pokemon.title
-       pokemons["img_url"] = request.build_absolute_uri(pokemon.image.url)
-       pokemons["title_en"]
-       pokemons["title_jp"]
-       pokemons["description"]
+        pokemon = Pokemon.objects.get(id=pokemon_id)
+        pokemons["pokemon_id"] = pokemon.id
+        pokemons["title_ru"] = pokemon.title
+        pokemons["img_url"] = request.build_absolute_uri(pokemon.image.url)
+        pokemons["title_en"] = pokemon.title_eng
+        pokemons["title_jp"] = pokemon.title_jp
+        pokemons["description"] = pokemon.description
+        if pokemon.parent:
+            pokemons["previous_evolution"] = dict()
+            pokemons["previous_evolution"]["title_ru"] = pokemon.parent.title
+            pokemons["previous_evolution"]["pokemon_id"] = pokemon.parent.id
+            pokemons["previous_evolution"]["img_url"] = pokemon.parent.image.url
+
 
     except Pokemon.DoesNotExist:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')

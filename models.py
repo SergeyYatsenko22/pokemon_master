@@ -1,10 +1,13 @@
 from django.db import models  # noqa F401
-from django.http import request
 
 
 class Pokemon(models.Model):
     title = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to="pokemon_images", null=True, blank=True)
+    title_eng = models.CharField(max_length=200, blank=True)
+    title_jp = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return f'{self.title}'
