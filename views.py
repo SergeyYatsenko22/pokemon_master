@@ -5,7 +5,7 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from pokemon_entities.models import Pokemon, PokemonEntity
 from django.utils import timezone
-from collections import defaultdict
+
 
 MOSCOW_CENTER = [55.751244, 37.618423]
 DEFAULT_IMAGE_URL = (
@@ -83,6 +83,7 @@ def show_all_pokemons(request):
 def show_pokemon(request, pokemon_id):
 
     pokemons = dict()
+
     try:
         pokemon = Pokemon.objects.get(id=pokemon_id)
         pokemons["pokemon_id"] = pokemon.id
@@ -91,12 +92,18 @@ def show_pokemon(request, pokemon_id):
         pokemons["title_en"] = pokemon.title_eng
         pokemons["title_jp"] = pokemon.title_jp
         pokemons["description"] = pokemon.description
-        if pokemon.parent:
+        if pokemon.previous_evolution:
             pokemons["previous_evolution"] = dict()
-            pokemons["previous_evolution"]["title_ru"] = pokemon.parent.title
-            pokemons["previous_evolution"]["pokemon_id"] = pokemon.parent.id
-            pokemons["previous_evolution"]["img_url"] = pokemon.parent.image.url
+            pokemons["previous_evolution"]["title_ru"] = pokemon.previous_evolution.title
+            pokemons["previous_evolution"]["pokemon_id"] = pokemon.previous_evolution.id
+            pokemons["previous_evolution"]["img_url"] = pokemon.previous_evolution.image.url
 
+
+        for next_pokemon in pokemon.next_evolutions.all():
+            pokemons["next_evolution"] = dict()
+            pokemons["next_evolution"]["title_ru"] = next_pokemon.title
+            pokemons["next_evolution"]["pokemon_id"] = next_pokemon.id
+            pokemons["next_evolution"]["img_url"] = next_pokemon.image.url
 
     except Pokemon.DoesNotExist:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
